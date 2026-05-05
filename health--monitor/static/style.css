@@ -1,0 +1,241 @@
+/* ── RESET ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── BODY ── */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #020617;
+  color: #e2e8f0;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(14,165,233,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(56,189,248,0.04) 0%, transparent 50%);
+}
+
+/* ── CONTAINER ── */
+.container {
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 28px;
+  background: #0f172a;
+  border-radius: 16px;
+  border: 0.5px solid #1e293b;
+  box-shadow:
+    0 0 0 1px rgba(56,189,248,0.04),
+    0 24px 48px rgba(0,0,0,0.5);
+}
+
+/* ── TYPOGRAPHY ── */
+h1 { font-size: 24px; font-weight: 700; }
+h2 { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+h3 { font-size: 15px; font-weight: 600; color: #94a3b8; margin-bottom: 10px; }
+
+/* ── FORM ELEMENTS ── */
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+input, select, textarea {
+  flex: 1 1 30%;
+  padding: 11px 13px;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  background: #1e293b;
+  color: #e2e8f0;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+input:focus, select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.12);
+}
+
+input::placeholder { color: #475569; }
+
+/* ── BUTTON ── */
+button {
+  padding: 11px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #0ea5e9;
+  color: #000;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .2s, transform .1s, box-shadow .2s;
+  font-family: inherit;
+}
+
+button:hover {
+  background: #38bdf8;
+  box-shadow: 0 0 16px rgba(56,189,248,0.3);
+}
+
+button:active { transform: scale(0.98); }
+
+/* ── SOS BUTTON ── */
+.sos {
+  background: #ef4444;
+  color: #fff;
+}
+
+.sos:hover {
+  background: #f87171;
+  box-shadow: 0 0 20px rgba(239,68,68,0.4);
+}
+
+/* ── TABLE ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0a0f1e;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+thead { position: sticky; top: 0; z-index: 1; }
+
+th {
+  background: #0f172a;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #64748b;
+  border-bottom: 1px solid #1e293b;
+}
+
+td {
+  padding: 11px 14px;
+  border-bottom: 0.5px solid #1e293b;
+  color: #cbd5e1;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(56,189,248,0.03); }
+
+/* ── ALERTS ── */
+.alert {
+  padding: 13px 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.success {
+  background: #052e16;
+  border: 1px solid #15803d;
+  color: #4ade80;
+}
+
+.error {
+  background: #450a0a;
+  border: 1px solid #b91c1c;
+  color: #f87171;
+  animation: errorShake .4s ease;
+}
+
+@keyframes errorShake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ── LINKS ── */
+a {
+  color: #38bdf8;
+  text-decoration: none;
+  margin-right: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color .2s;
+}
+
+a:hover { color: #7dd3fc; }
+
+/* ── MAP ── */
+#map {
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #1e293b;
+}
+
+/* ── WATERMARK ── */
+.watermark {
+  position: fixed;
+  bottom: 12px;
+  right: 14px;
+  opacity: 0.3;
+  font-size: 11px;
+  letter-spacing: .08em;
+  pointer-events: none;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ── PAGE FADE IN ── */
+.container {
+  animation: fadeUp .5s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── CARD BASE ── */
+.card {
+  background: #0a0f1e;
+  border: 0.5px solid #1e293b;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* ── GLOW EFFECT ON HIGH RISK ── */
+.danger-glow {
+  box-shadow: 0 0 20px rgba(239,68,68,0.25);
+  border-color: #ef4444 !important;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .container {
+    margin: 14px;
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  input, select {
+    flex: 1 1 100%;
+  }
+
+  table { font-size: 12px; }
+  th, td { padding: 9px 10px; }
+}
+
+@media (max-width: 480px) {
+  h2 { font-size: 17px; }
+  button { font-size: 12px; padding: 10px 14px; }
+}

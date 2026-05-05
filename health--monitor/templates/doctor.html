@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>HealthAI — Doctor Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--teal:#0ABFBC;--teal-dk:#089599;--navy:#0D1B2A;--card:#111f2e;--card2:#0d1a28;--border:rgba(10,191,188,0.14);--text:#E8F4F8;--muted:#6B8FA3;--green:#06D6A0;--red:#F87171;--orange:#FB923C;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(10,191,188,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(10,191,188,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+    .page{max-width:1100px;margin:0 auto;padding:28px 20px 60px;position:relative;z-index:1;}
+
+    /* NAV */
+    nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:10px;}
+    .nav-logo{display:flex;align-items:center;gap:10px;}
+    .nav-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--teal),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(10,191,188,0.35);}
+    .nav-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;}
+    .nav-name span{color:var(--teal);}
+    .nav-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .live-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--green);background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.25);padding:5px 12px;border-radius:20px;font-weight:600;}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.3s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .nav-btn{padding:8px 14px;background:transparent;border:1.5px solid var(--border);border-radius:9px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-block;}
+    .nav-btn:hover{border-color:var(--teal);color:var(--teal);}
+    .nav-btn.danger{border-color:rgba(248,113,113,0.3);color:var(--red);}
+    .refresh-bar{height:2px;background:var(--teal);transform-origin:left;animation:refBar 10s linear infinite;border-radius:2px;margin-bottom:24px;}
+    @keyframes refBar{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+
+    /* TABS */
+    .tab-bar{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:24px;overflow-x:auto;}
+    .tab{padding:9px 18px;border-radius:8px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all 0.2s;display:flex;align-items:center;gap:7px;}
+    .tab.active{background:var(--teal);color:#fff;box-shadow:0 3px 12px rgba(10,191,188,0.3);}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;animation:fadeIn 0.3s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden;}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+    .stat-card.c-total::before{background:var(--teal);}
+    .stat-card.c-high::before{background:var(--red);}
+    .stat-card.c-mod::before{background:var(--orange);}
+    .stat-card.c-low::before{background:var(--green);}
+    .stat-card.c-score::before{background:#a78bfa;}
+    .stat-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1.1;}
+    .stat-label{font-size:11px;color:var(--muted);margin-top:5px;text-transform:uppercase;letter-spacing:0.6px;}
+
+    /* EMERGENCY ALERT */
+    #emergencyAlert{display:none;background:rgba(248,113,113,0.1);border:1.5px solid var(--red);border-radius:12px;padding:14px 18px;margin-bottom:20px;align-items:center;gap:12px;animation:shake2 0.4s ease;}
+    #emergencyAlert.show{display:flex;}
+    @keyframes shake2{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+    .emer-dot{width:12px;height:12px;min-width:12px;border-radius:50%;background:var(--red);animation:sosPulse 1s infinite;}
+    @keyframes sosPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
+
+    /* COMMON */
+    .section-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+
+    /* TABLE */
+    .filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+    .filter-btn{padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;}
+    .filter-btn.active,.filter-btn:hover{background:var(--teal);border-color:var(--teal);color:#fff;}
+    .search-input{padding:7px 14px;background:var(--card2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;min-width:180px;margin-left:auto;}
+    .search-input:focus{border-color:var(--teal);}
+    .search-input::placeholder{color:#2a4050;}
+    .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    thead{background:rgba(10,191,188,0.05);}
+    th{padding:12px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;cursor:pointer;user-select:none;}
+    th:hover{color:var(--teal);}
+    td{padding:12px 14px;border-top:1px solid var(--border);vertical-align:middle;}
+    tr.high-row td{background:rgba(248,113,113,0.04);}
+    tr:hover td{background:rgba(255,255,255,0.02);}
+    .risk-pill{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;}
+    .low{background:rgba(6,214,160,0.12);color:var(--green);}
+    .mod{background:rgba(251,146,60,0.12);color:var(--orange);}
+    .high{background:rgba(248,113,113,0.12);color:var(--red);}
+    .score-bar{height:4px;border-radius:2px;background:rgba(255,255,255,0.06);width:60px;display:inline-block;vertical-align:middle;margin-left:8px;overflow:hidden;}
+    .score-fill{height:100%;border-radius:2px;background:var(--teal);}
+    .action-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;transition:all 0.2s;}
+    .action-btn:hover{border-color:var(--teal);color:var(--teal);}
+    .action-btn.note{border-color:rgba(167,139,250,0.3);color:#a78bfa;}
+    .action-btn.note:hover{background:rgba(167,139,250,0.08);}
+
+    /* CHARTS */
+    .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+    .chart-card h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;}
+    canvas{max-height:200px;}
+
+    /* PRESCRIPTIONS */
+    .presc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .presc-form{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:7px;}
+    .field input,.field select,.field textarea{width:100%;padding:11px 14px;background:var(--navy);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;resize:vertical;}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);}
+    .field input::placeholder,.field textarea::placeholder{color:#2a4050;}
+    .field select option{background:var(--navy);}
+    .btn-primary{padding:11px 20px;background:linear-gradient(135deg,var(--teal),var(--teal-dk));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(10,191,188,0.25);transition:all 0.2s;}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,191,188,0.35);}
+    .presc-list{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;max-height:480px;overflow-y:auto;}
+    .presc-item{background:var(--navy);border-radius:10px;padding:14px;border-left:3px solid var(--teal);}
+    .presc-patient{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px;}
+    .presc-med{font-size:13px;color:var(--teal);margin-bottom:4px;}
+    .presc-note{font-size:12px;color:var(--muted);line-height:1.5;}
+    .presc-date{font-size:10px;color:rgba(107,143,163,0.5);margin-top:6px;}
+    .presc-empty{text-align:center;color:var(--muted);padding:30px;font-size:13px;}
+
+    /* APPOINTMENTS */
+    .appt-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .appt-card-item{background:var(--navy);border-radius:12px;padding:16px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;transition:border-color 0.2s;}
+    .appt-card-item:hover{border-color:var(--teal);}
+    .appt-info h4{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:3px;}
+    .appt-info p{font-size:12px;color:var(--muted);}
+    .appt-time{text-align:right;flex-shrink:0;}
+    .appt-date-badge{background:rgba(10,191,188,0.1);border:1px solid rgba(10,191,188,0.2);color:var(--teal);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:4px;}
+    .appt-t{font-size:12px;color:var(--muted);}
+
+    /* PATIENT MONITOR */
+    .monitor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+    .monitor-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:border-color 0.3s;}
+    .monitor-card.alert{border-color:var(--red);}
+    .monitor-card.warn{border-color:var(--orange);}
+    .mc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+    .mc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+    .mc-phone{font-size:11px;color:var(--muted);margin-top:2px;}
+    .mc-vitals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+    .mc-vital{text-align:center;background:var(--navy);border-radius:8px;padding:8px 6px;}
+    .mc-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
+    .mc-key{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+    .mc-footer{display:flex;justify-content:space-between;align-items:center;}
+    .mc-score{font-size:12px;color:var(--muted);}
+    .mc-score b{color:var(--teal);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:2000;display:none;align-items:center;justify-content:center;}
+    .modal-overlay.show{display:flex;}
+    .modal{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;width:100%;max-width:440px;animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1);}
+    @keyframes modalIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
+    .modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;}
+    .modal-close{background:rgba(255,255,255,0.08);border:none;color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
+    .modal-close:hover{background:rgba(255,255,255,0.15);}
+
+    /* WATERMARK */
+    .watermark{position:fixed;bottom:14px;right:18px;display:flex;align-items:center;gap:7px;z-index:9999;pointer-events:none;user-select:none;}
+    .wm-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(10,191,188,0.5)}70%{box-shadow:0 0 0 8px rgba(10,191,188,0)}100%{box-shadow:0 0 0 0 rgba(10,191,188,0)}}
+    .wm-text{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.6px;color:rgba(10,191,188,0.5);}
+    .wm-text b{color:rgba(10,191,188,0.85);}
+    @media(max-width:700px){.stats-grid{grid-template-columns:1fr 1fr;}.chart-grid,.presc-grid,.appt-grid{grid-template-columns:1fr;}.monitor-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="nav-name">Health<span>AI</span></div>
+    </div>
+    <div class="nav-right">
+      <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+      <span style="font-size:12px;color:var(--muted)" id="countdown">Refresh in 10s</span>
+      <a href="/appointments" class="nav-btn">📅 Appointments</a>
+      <a href="/analytics" class="nav-btn">📈 Analytics</a>
+      <a href="/logout" class="nav-btn danger">Logout</a>
+    </div>
+  </nav>
+  <div class="refresh-bar"></div>
+
+  <!-- EMERGENCY ALERT -->
+  <div id="emergencyAlert">
+    <div class="emer-dot"></div>
+    <div style="flex:1"><strong style="color:var(--red);">🚨 EMERGENCY ALERT</strong> — <span id="emerText">High risk patients detected! Immediate attention required.</span></div>
+    <button onclick="document.getElementById('emergencyAlert').classList.remove('show')" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:18px;">×</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card c-total"><div class="stat-num">{{ data|length }}</div><div class="stat-label">Total Records</div></div>
+    <div class="stat-card c-high"><div class="stat-num" style="color:var(--red)" id="statHigh">{{ data|selectattr(10,'equalto','High Risk')|list|length }}</div><div class="stat-label">High Risk</div></div>
+    <div class="stat-card c-mod"><div class="stat-num" style="color:var(--orange)" id="statMod">{{ data|selectattr(10,'equalto','Moderate Risk')|list|length }}</div><div class="stat-label">Moderate</div></div>
+    <div class="stat-card c-low"><div class="stat-num" style="color:var(--green)" id="statLow">{{ data|selectattr(10,'equalto','Low Risk')|list|length }}</div><div class="stat-label">Low Risk</div></div>
+    <div class="stat-card c-score"><div class="stat-num" style="color:#a78bfa">{% if data %}{{ ((data|map(attribute=11)|list|sum) / data|length)|round(0)|int }}{% else %}—{% endif %}</div><div class="stat-label">Avg Score</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('patients',this)">👥 Patient Records</button>
+    <button class="tab" onclick="showTab('monitor',this)">📡 Live Monitor</button>
+    <button class="tab" onclick="showTab('charts',this)">📊 Analytics</button>
+    <button class="tab" onclick="showTab('prescriptions',this)">💊 Prescriptions</button>
+    <button class="tab" onclick="showTab('appointments',this)">📅 Appointments</button>
+  </div>
+
+  <!-- TAB: PATIENTS -->
+  <div class="tab-panel active" id="tab-patients">
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+      <button class="filter-btn" onclick="filterTable('High Risk',this)">🔴 High Risk</button>
+      <button class="filter-btn" onclick="filterTable('Moderate Risk',this)">🟠 Moderate</button>
+      <button class="filter-btn" onclick="filterTable('Low Risk',this)">🟢 Low Risk</button>
+      <input class="search-input" type="text" placeholder="🔍 Search patient…" oninput="searchTable(this.value)"/>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)"># ↕</th>
+            <th onclick="sortTable(1)">Patient ↕</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Doctor</th>
+            <th onclick="sortTable(5)">Heart Rate ↕</th>
+            <th onclick="sortTable(6)">SpO₂ ↕</th>
+            <th onclick="sortTable(7)">Temp ↕</th>
+            <th>Result</th>
+            <th onclick="sortTable(9)">Score ↕</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          {% for r in data %}
+          <tr data-risk="{{ r[10] }}" class="{% if r[10]=='High Risk' %}high-row{% endif %}">
+            <td style="color:var(--muted)">{{ loop.index }}</td>
+            <td style="font-weight:600">{{ r[1] }}</td>
+            <td style="color:var(--muted)">{{ r[2] }}</td>
+            <td style="color:var(--muted);font-size:12px">{{ r[3] }}</td>
+            <td style="color:var(--muted)">{{ r[4] }}</td>
+            <td>{{ r[7] }} <span style="font-size:11px;color:var(--muted)">bpm</span></td>
+            <td>{{ r[8] }}<span style="font-size:11px;color:var(--muted)">%</span></td>
+            <td>{{ r[9] }}<span style="font-size:11px;color:var(--muted)">°C</span></td>
+            <td><span class="risk-pill {% if r[10]=='High Risk' %}high{% elif r[10]=='Moderate Risk' %}mod{% else %}low{% endif %}">{{ r[10] }}</span></td>
+            <td>{{ r[11] }}<span class="score-bar"><span class="score-fill" style="width:{{ r[11] }}%"></span></span></td>
+            <td><button class="action-btn note" onclick="openNote('{{ r[1] }}','{{ r[10] }}',{{ r[7] }},{{ r[8] }},{{ r[9] }},{{ r[11] }})">📝 Note</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB: LIVE MONITOR -->
+  <div class="tab-panel" id="tab-monitor">
+    <div class="section-title">Real-time Patient Cards</div>
+    <div class="monitor-grid" id="monitorGrid">
+      {% for r in data %}
+      <div class="monitor-card {% if r[10]=='High Risk' %}alert{% elif r[10]=='Moderate Risk' %}warn{% endif %}">
+        <div class="mc-header">
+          <div>
+            <div class="mc-name">{{ r[1] }}</div>
+            <div class="mc-phone">📞 {{ r[2] }} · 📍 {{ r[3] }}</div>
+          </div>
+          <span class="risk-pill {% if r[10]=='High Risk' %}high{% elif r[10]=='Moderate Risk' %}mod{% else %}low{% endif %}">{{ r[10] }}</span>
+        </div>
+        <div class="mc-vitals">
+          <div class="mc-vital"><div class="mc-val" style="color:#F87171">{{ r[7] }}</div><div class="mc-key">HR bpm</div></div>
+          <div class="mc-vital"><div class="mc-val" style="color:#0ABFBC">{{ r[8] }}</div><div class="mc-key">SpO₂ %</div></div>
+          <div class="mc-vital"><div class="mc-val" style="color:#FB923C">{{ r[9] }}</div><div class="mc-key">Temp °C</div></div>
+        </div>
+        <div class="mc-footer">
+          <div class="mc-score">Score: <b>{{ r[11] }}/100</b></div>
+          <div style="display:flex;gap:6px">
+            <button class="action-btn" onclick="callPatient('{{ r[2] }}')">📞 Call</button>
+            <button class="action-btn note" onclick="openNote('{{ r[1] }}','{{ r[10] }}',{{ r[7] }},{{ r[8] }},{{ r[9] }},{{ r[11] }})">📝 Note</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- TAB: CHARTS -->
+  <div class="tab-panel" id="tab-charts">
+    <div class="chart-grid">
+      <div class="chart-card"><h3>❤️ Heart Rate Distribution</h3><canvas id="hrChart"></canvas></div>
+      <div class="chart-card"><h3>💧 SpO₂ Distribution</h3><canvas id="spo2Chart"></canvas></div>
+      <div class="chart-card"><h3>⭐ Health Score Trend</h3><canvas id="scoreChart"></canvas></div>
+      <div class="chart-card"><h3>🎯 Risk Distribution</h3><canvas id="riskChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TAB: PRESCRIPTIONS -->
+  <div class="tab-panel" id="tab-prescriptions">
+    <div class="presc-grid">
+      <div class="presc-form">
+        <div class="section-title">Write Prescription</div>
+        <div class="field"><label>Patient Name</label><input type="text" id="p-name" placeholder="Patient full name"/></div>
+        <div class="field"><label>Medication</label><input type="text" id="p-med" placeholder="e.g. Paracetamol 500mg"/></div>
+        <div class="field"><label>Dosage &amp; Frequency</label><input type="text" id="p-dose" placeholder="e.g. 1 tablet twice daily"/></div>
+        <div class="field"><label>Duration</label><input type="text" id="p-dur" placeholder="e.g. 5 days"/></div>
+        <div class="field"><label>Doctor Notes</label><textarea id="p-notes" rows="3" placeholder="Additional instructions for patient…"></textarea></div>
+        <div class="field"><label>Severity</label>
+          <select id="p-sev"><option value="routine">Routine</option><option value="urgent">Urgent</option><option value="emergency">Emergency</option></select>
+        </div>
+        <button class="btn-primary" onclick="savePrescription()">💊 Save Prescription</button>
+      </div>
+      <div>
+        <div class="section-title">Saved Prescriptions</div>
+        <div class="presc-list" id="prescList">
+          <div class="presc-empty">No prescriptions yet. Write one on the left.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: APPOINTMENTS -->
+  <div class="tab-panel" id="tab-appointments">
+    <div class="section-title">Upcoming Appointments</div>
+    {% if data %}
+    <div class="appt-grid" id="apptGrid">
+      <!-- populated from /appointments data via JS or show static -->
+      <div class="card" style="text-align:center;color:var(--muted);padding:40px;">
+        <div style="font-size:36px;margin-bottom:12px;">📅</div>
+        <div style="font-size:14px;margin-bottom:8px;">View all appointments</div>
+        <a href="/appointments" style="color:var(--teal);text-decoration:none;font-size:13px;">Go to Appointments →</a>
+      </div>
+    </div>
+    {% else %}
+    <div style="text-align:center;color:var(--muted);padding:60px;">No appointments scheduled.</div>
+    {% endif %}
+    <div style="margin-top:20px">
+      <a href="/appointments" class="btn-primary" style="display:inline-block;text-decoration:none;padding:11px 24px;">📅 Manage All Appointments</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>📝 Patient Note — <span id="notePatient"></span></span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="noteVitals" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;"></div>
+    <div class="field"><label>Doctor's Note</label><textarea id="noteText" rows="5" placeholder="Write your clinical notes, observations, or follow-up instructions here…" style="width:100%;padding:12px 14px;background:var(--navy);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical;"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn-primary" onclick="saveNote()" style="flex:1;">Save Note</button>
+      <button onclick="closeModal()" style="flex:1;padding:11px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="watermark"><div class="wm-dot"></div><div class="wm-text"><b>MADHAVAN</b> AI&amp;DS</div></div>
+
+<script>
+// ── AUTO REFRESH ──
+let cd=10;
+setInterval(()=>{cd--;document.getElementById('countdown').textContent='Refresh in '+cd+'s';if(cd<=0)location.reload();},1000);
+
+// ── TABS ──
+function showTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── EMERGENCY ALERT ──
+const highCount=document.querySelectorAll('[data-risk="High Risk"]').length;
+if(highCount>0){
+  document.getElementById('emergencyAlert').classList.add('show');
+  document.getElementById('emerText').textContent=`${highCount} patient(s) with HIGH RISK detected! Immediate attention required.`;
+}
+
+// ── FILTER TABLE ──
+function filterTable(risk,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#tableBody tr').forEach(row=>{row.style.display=(risk==='all'||row.dataset.risk===risk)?'':'none';});
+}
+
+// ── SEARCH ──
+function searchTable(q){
+  const s=q.toLowerCase();
+  document.querySelectorAll('#tableBody tr').forEach(row=>{
+    row.style.display=row.textContent.toLowerCase().includes(s)?'':'none';
+  });
+}
+
+// ── SORT TABLE ──
+let sortDir={};
+function sortTable(col){
+  const tbody=document.getElementById('tableBody');
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  sortDir[col]=!sortDir[col];
+  rows.sort((a,b)=>{
+    const av=a.cells[col]?.textContent.trim()||'';
+    const bv=b.cells[col]?.textContent.trim()||'';
+    const an=parseFloat(av),bn=parseFloat(bv);
+    if(!isNaN(an)&&!isNaN(bn))return sortDir[col]?an-bn:bn-an;
+    return sortDir[col]?av.localeCompare(bv):bv.localeCompare(av);
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
+// ── CHARTS ──
+const allData={{data|tojson}};
+const hr=allData.map(r=>r[7]),spo2=allData.map(r=>r[8]),temp=allData.map(r=>r[9]),score=allData.map(r=>r[11]);
+const labels=allData.map((r,i)=>r[1]||'R'+(i+1));
+const gc='rgba(255,255,255,0.04)',tc='#6B8FA3';
+const baseOpts={responsive:true,animation:{duration:600},plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc,font:{size:10},maxTicksLimit:8},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}};
+
+if(hr.length>0){
+  new Chart(document.getElementById('hrChart'),{type:'bar',data:{labels,datasets:[{label:'HR',data:hr,backgroundColor:hr.map(v=>v>100||v<60?'rgba(248,113,113,0.7)':'rgba(10,191,188,0.5)'),borderRadius:4}]},options:{...baseOpts}});
+  new Chart(document.getElementById('spo2Chart'),{type:'bar',data:{labels,datasets:[{label:'SpO2',data:spo2,backgroundColor:spo2.map(v=>v<95?'rgba(251,146,60,0.7)':'rgba(6,214,160,0.5)'),borderRadius:4}]},options:{...baseOpts}});
+  new Chart(document.getElementById('scoreChart'),{type:'line',data:{labels,datasets:[{label:'Score',data:score,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,0.1)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#a78bfa',borderWidth:2}]},options:{...baseOpts}});
+  const riskCounts={high:allData.filter(r=>r[10]==='High Risk').length,mod:allData.filter(r=>r[10]==='Moderate Risk').length,low:allData.filter(r=>r[10]==='Low Risk').length};
+  new Chart(document.getElementById('riskChart'),{type:'doughnut',data:{labels:['High Risk','Moderate','Low Risk'],datasets:[{data:[riskCounts.high,riskCounts.mod,riskCounts.low],backgroundColor:['rgba(248,113,113,0.8)','rgba(251,146,60,0.8)','rgba(6,214,160,0.8)'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,animation:{duration:600},plugins:{legend:{labels:{color:tc,font:{size:12},boxWidth:12}}}}});
+}
+
+// ── PRESCRIPTIONS ──
+let prescriptions=JSON.parse(localStorage.getItem('haiPresc')||'[]');
+renderPresc();
+
+function savePrescription(){
+  const n=document.getElementById('p-name').value.trim();
+  const m=document.getElementById('p-med').value.trim();
+  if(!n||!m){alert('Please fill patient name and medication.');return;}
+  const p={id:Date.now(),patient:n,med:m,dose:document.getElementById('p-dose').value,dur:document.getElementById('p-dur').value,notes:document.getElementById('p-notes').value,sev:document.getElementById('p-sev').value,date:new Date().toLocaleDateString()};
+  prescriptions.unshift(p);
+  localStorage.setItem('haiPresc',JSON.stringify(prescriptions));
+  renderPresc();
+  ['p-name','p-med','p-dose','p-dur','p-notes'].forEach(id=>document.getElementById(id).value='');
+}
+
+function renderPresc(){
+  const el=document.getElementById('prescList');
+  if(prescriptions.length===0){el.innerHTML='<div class="presc-empty">No prescriptions yet. Write one on the left.</div>';return;}
+  el.innerHTML=prescriptions.map(p=>`
+    <div class="presc-item">
+      <div class="presc-patient">${p.patient} <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${p.sev==='emergency'?'rgba(248,113,113,0.15)':p.sev==='urgent'?'rgba(251,146,60,0.15)':'rgba(10,191,188,0.1)'};color:${p.sev==='emergency'?'#F87171':p.sev==='urgent'?'#FB923C':'#0ABFBC'}">${p.sev}</span></div>
+      <div class="presc-med">💊 ${p.med} ${p.dose?'· '+p.dose:''} ${p.dur?'· '+p.dur:''}</div>
+      ${p.notes?`<div class="presc-note">${p.notes}</div>`:''}
+      <div class="presc-date">📅 ${p.date} <button onclick="deletePresc(${p.id})" style="margin-left:10px;background:transparent;border:none;color:rgba(248,113,113,0.5);cursor:pointer;font-size:11px;">Delete</button></div>
+    </div>`).join('');
+}
+
+function deletePresc(id){
+  prescriptions=prescriptions.filter(p=>p.id!==id);
+  localStorage.setItem('haiPresc',JSON.stringify(prescriptions));
+  renderPresc();
+}
+
+// ── NOTE MODAL ──
+let currentNote='';
+function openNote(name,risk,hr,spo2,temp,score){
+  document.getElementById('notePatient').textContent=name;
+  document.getElementById('noteVitals').innerHTML=`
+    <div style="background:var(--navy);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#F87171">${hr}</div><div style="font-size:10px;color:var(--muted)">HR bpm</div></div>
+    <div style="background:var(--navy);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#0ABFBC">${spo2}</div><div style="font-size:10px;color:var(--muted)">SpO₂ %</div></div>
+    <div style="background:var(--navy);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#FB923C">${temp}</div><div style="font-size:10px;color:var(--muted)">Temp °C</div></div>
+    <div style="background:var(--navy);border-radius:8px;padding:10px;text-align:center"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#a78bfa">${score}</div><div style="font-size:10px;color:var(--muted)">Score</div></div>`;
+  const saved=localStorage.getItem('note_'+name)||'';
+  document.getElementById('noteText').value=saved;
+  currentNote=name;
+  document.getElementById('noteModal').classList.add('show');
+}
+function saveNote(){
+  localStorage.setItem('note_'+currentNote,document.getElementById('noteText').value);
+  closeModal();
+  const n=document.createElement('div');n.style.cssText='position:fixed;top:20px;right:20px;background:rgba(6,214,160,0.15);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;font-family:Syne,sans-serif;font-weight:700;';n.textContent='✓ Note saved!';document.body.appendChild(n);setTimeout(()=>n.remove(),2000);
+}
+function closeModal(){document.getElementById('noteModal').classList.remove('show');}
+document.getElementById('noteModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+// ── CALL PATIENT ──
+function callPatient(phone){window.open('tel:'+phone);}
+</script>
+</body></html>

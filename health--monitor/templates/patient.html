@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>HealthAI — Patient</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--teal:#0ABFBC;--teal-dk:#089599;--navy:#0D1B2A;--card:#111f2e;--card2:#0d1a28;--border:rgba(10,191,188,0.14);--border2:rgba(255,255,255,0.06);--text:#E8F4F8;--muted:#6B8FA3;--green:#06D6A0;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(10,191,188,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(10,191,188,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+    .page{max-width:820px;margin:0 auto;padding:28px 20px 60px;position:relative;z-index:1;}
+    /* NAVBAR */
+    nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;}
+    .nav-logo{display:flex;align-items:center;gap:10px;}
+    .nav-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--teal),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(10,191,188,0.35);}
+    .nav-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;}
+    .nav-name span{color:var(--teal);}
+    .nav-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+    .nav-link{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;border:1px solid transparent;transition:all 0.2s;}
+    .nav-link:hover{border-color:var(--border);color:var(--text);}
+    .nav-link.logout{border-color:rgba(248,113,113,0.3);color:#f87171;}
+    .nav-link.logout:hover{background:rgba(248,113,113,0.08);}
+    /* PAGE HEADER */
+    .page-header{margin-bottom:28px;}
+    .page-header h1{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:4px;}
+    .page-header p{font-size:14px;color:var(--muted);}
+    /* SECTIONS */
+    .section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;}
+    .section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    /* FIELDS */
+    .field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+    .field{display:flex;flex-direction:column;gap:6px;}
+    .field label{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;}
+    .field input,.field select{padding:11px 14px;background:var(--navy);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;width:100%;}
+    .field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,191,188,0.1);}
+    .field input::placeholder{color:#2a4050;}
+    .field select option{background:var(--navy);}
+    /* VITALS */
+    .vitals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+    .vital-card{background:var(--navy);border:1.5px solid var(--border);border-radius:12px;padding:18px 14px;text-align:center;transition:border-color 0.2s;}
+    .vital-card:focus-within{border-color:var(--teal);}
+    .vital-card label{font-size:11px;color:var(--muted);display:block;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.7px;}
+    .vital-card input{background:transparent;border:none;color:var(--text);font-family:'Syne',sans-serif;font-size:28px;font-weight:700;text-align:center;width:100%;outline:none;}
+    .vital-unit{font-size:12px;color:var(--muted);margin-top:4px;}
+    .vital-range{font-size:10px;color:rgba(107,143,163,0.5);margin-top:6px;}
+    /* BUTTONS */
+    .btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,var(--teal),var(--teal-dk));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(10,191,188,0.25);transition:all 0.25s;letter-spacing:0.3px;}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(10,191,188,0.35);}
+    .btn-secondary{padding:10px 18px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;}
+    .btn-secondary:hover{border-color:var(--teal);color:var(--teal);}
+    /* TIPS */
+    .tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;}
+    .tip-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;font-size:12px;color:var(--muted);}
+    .tip-icon{font-size:22px;display:block;margin-bottom:8px;}
+    /* WATERMARK */
+    .watermark{position:fixed;bottom:14px;right:18px;display:flex;align-items:center;gap:7px;z-index:9999;pointer-events:none;user-select:none;}
+    .wm-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(10,191,188,0.5)}70%{box-shadow:0 0 0 8px rgba(10,191,188,0)}100%{box-shadow:0 0 0 0 rgba(10,191,188,0)}}
+    .wm-text{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.6px;color:rgba(10,191,188,0.5);}
+    .wm-text b{color:rgba(10,191,188,0.85);}
+    @media(max-width:600px){.vitals-grid{grid-template-columns:1fr;}.tips-grid{grid-template-columns:1fr 1fr;}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="nav-name">Health<span>AI</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="/appointments" class="nav-link">📅 Appointments</a>
+      <a href="/history" class="nav-link">📊 History</a>
+      <a href="/logout" class="nav-link logout">Logout</a>
+    </div>
+  </nav>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h1>Health Check</h1>
+    <p>Enter your details below and get an instant AI-powered health assessment</p>
+  </div>
+
+  <!-- PREDICT FORM -->
+  <form action="/predict" method="post">
+    <div class="section">
+      <div class="section-title">Patient Details</div>
+      <div class="field-grid">
+        <div class="field"><label>Full Name</label><input type="text" name="patient_name" placeholder="e.g. Madhavan V" required/></div>
+        <div class="field"><label>Phone Number</label><input type="text" name="patient_number" placeholder="e.g. 9876543210" required/></div>
+        <div class="field"><label>City / Address</label><input type="text" name="patient_address" placeholder="e.g. Chennai" required/></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Select Doctor</div>
+      <div class="field">
+        <label>Assigned Doctor</label>
+        <select name="doctor_id" required>{% for d in doctors %}<option value="{{ d[0] }}">{{ d[1] }} — {{ d[3] }}</option>{% endfor %}</select>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Vitals Input</div>
+      <div class="vitals-grid">
+        <div class="vital-card"><label>❤️ Heart Rate</label><input type="number" name="heart_rate" placeholder="72" min="20" max="250" required/><div class="vital-unit">bpm</div><div class="vital-range">Normal: 60–100</div></div>
+        <div class="vital-card"><label>💧 SpO₂</label><input type="number" name="spo2" placeholder="98" min="50" max="100" required/><div class="vital-unit">%</div><div class="vital-range">Normal: ≥95%</div></div>
+        <div class="vital-card"><label>🌡️ Temperature</label><input type="number" name="temp" placeholder="37.0" step="0.1" min="30" max="45" required/><div class="vital-unit">°C</div><div class="vital-range">Normal: ≤37.5°C</div></div>
+      </div>
+    </div>
+    <button type="submit" class="btn-primary">⚡ Analyse My Health</button>
+  </form>
+
+  <!-- BOOK APPOINTMENT -->
+  <div class="section" style="margin-top:24px">
+    <div class="section-title">Book an Appointment</div>
+    <form action="/book" method="post">
+      <div class="field-grid">
+        <div class="field"><label>Your Name</label><input type="text" name="patient_name" placeholder="Patient name" required/></div>
+        <div class="field"><label>Doctor</label><select name="doctor_name">{% for d in doctors %}<option value="{{ d[1] }}">{{ d[1] }}</option>{% endfor %}</select></div>
+        <div class="field"><label>Date</label><input type="date" name="date" required/></div>
+        <div class="field"><label>Time</label><input type="time" name="time" required/></div>
+      </div>
+      <button type="submit" class="btn-secondary" style="margin-top:14px;width:100%">📅 Book Appointment</button>
+    </form>
+  </div>
+
+  <!-- TIPS -->
+  <div class="tips-grid">
+    <div class="tip-card"><span class="tip-icon">💧</span>Stay hydrated — 8 glasses daily</div>
+    <div class="tip-card"><span class="tip-icon">🏃</span>30 min exercise most days</div>
+    <div class="tip-card"><span class="tip-icon">😴</span>7–9 hours of sleep nightly</div>
+  </div>
+</div>
+
+<div class="watermark"><div class="wm-dot"></div><div class="wm-text"><b>MADHAVAN</b> AI&amp;DS</div></div>
+</body></html>

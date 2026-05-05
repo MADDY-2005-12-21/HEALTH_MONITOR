@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>HealthAI — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--teal:#0ABFBC;--teal-dk:#089599;--navy:#0D1B2A;--card:#111f2e;--border:rgba(10,191,188,0.16);--text:#E8F4F8;--muted:#6B8FA3;--green:#06D6A0;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;display:flex;overflow:hidden;color:var(--text);}
+    /* LEFT */
+    .left-panel{flex:1.1;position:relative;display:flex;flex-direction:column;justify-content:center;padding:60px 56px;background:linear-gradient(145deg,#0a1622 0%,#0d2235 60%,#0a2830 100%);overflow:hidden;}
+    .left-panel::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(10,191,188,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(10,191,188,0.04) 1px,transparent 1px);background-size:40px 40px;animation:gridScroll 20s linear infinite;}
+    @keyframes gridScroll{0%{background-position:0 0}100%{background-position:40px 40px}}
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+    .orb1{width:400px;height:400px;top:-80px;right:-100px;background:radial-gradient(circle,rgba(10,191,188,0.18),transparent 70%);}
+    .orb2{width:300px;height:300px;bottom:60px;left:-80px;background:radial-gradient(circle,rgba(6,214,160,0.12),transparent 70%);}
+    .ecg-line{position:absolute;bottom:22%;left:0;right:0;height:80px;overflow:hidden;opacity:0.3;}
+    .ecg-svg{width:200%;animation:ecgScroll 3s linear infinite;}
+    @keyframes ecgScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    .logo-wrap{position:relative;display:flex;align-items:center;gap:14px;margin-bottom:48px;}
+    .logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--teal),var(--green));border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(10,191,188,0.4);}
+    .logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;color:#fff;}
+    .logo-name span{color:var(--teal);}
+    .hero-heading{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(34px,4vw,50px);line-height:1.1;letter-spacing:-1.5px;margin-bottom:20px;}
+    .hero-heading em{font-style:normal;color:var(--teal);}
+    .hero-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:400px;margin-bottom:52px;position:relative;}
+    .stats-row{display:flex;gap:16px;position:relative;}
+    .stat-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:18px 22px;flex:1;}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+    .stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--teal);}
+    .pulse-dot{width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;margin-right:6px;animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(6,214,160,0.5)}70%{box-shadow:0 0 0 8px rgba(6,214,160,0)}100%{box-shadow:0 0 0 0 rgba(6,214,160,0)}}
+    /* RIGHT */
+    .right-panel{flex:0.9;display:flex;align-items:center;justify-content:center;padding:40px 48px;background:var(--card);position:relative;overflow:hidden;}
+    .right-panel::before{content:'';position:absolute;top:-120px;right:-120px;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(10,191,188,0.06),transparent 70%);}
+    .form-box{width:100%;max-width:380px;animation:slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .form-title{font-family:'Syne',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.8px;margin-bottom:6px;}
+    .form-sub{font-size:14px;color:var(--muted);margin-bottom:36px;}
+    .tab-row{display:flex;background:var(--navy);border-radius:10px;padding:4px;margin-bottom:30px;gap:4px;}
+    .tab-btn{flex:1;padding:9px;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.25s;}
+    .tab-btn.active{background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(10,191,188,0.35);}
+    .role-row{display:flex;gap:10px;margin-bottom:20px;}
+    .role-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.2s;}
+    .role-btn.selected{border-color:var(--teal);background:rgba(10,191,188,0.1);color:var(--teal);}
+    .input-group{margin-bottom:18px;}
+    .input-label{display:block;font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+    .input-wrap{position:relative;}
+    .input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);width:16px;height:16px;}
+    input[type="text"],input[type="password"]{width:100%;padding:13px 14px 13px 42px;background:var(--navy);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.25s,box-shadow 0.25s;}
+    input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,191,188,0.12);}
+    input::placeholder{color:#2a4050;}
+    .submit-btn{width:100%;padding:14px;margin-top:8px;background:linear-gradient(135deg,var(--teal),var(--teal-dk));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(10,191,188,0.3);transition:all 0.25s;}
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(10,191,188,0.4);}
+    .divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--muted);font-size:12px;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+    .features-row{display:flex;gap:12px;margin-top:28px;}
+    .feature-chip{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.02);font-size:11px;color:var(--muted);text-align:center;}
+    .feature-chip svg{color:var(--teal);}
+    /* WATERMARK */
+    .watermark{position:fixed;bottom:14px;right:18px;display:flex;align-items:center;gap:7px;z-index:9999;pointer-events:none;user-select:none;}
+    .wm-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.4s ease-in-out infinite;}
+    .wm-text{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.6px;color:rgba(10,191,188,0.5);}
+    .wm-text b{color:rgba(10,191,188,0.85);}
+    @media(max-width:768px){body{flex-direction:column;}.left-panel{padding:40px 28px;flex:none;min-height:35vh;}.stats-row{display:none;}.right-panel{flex:1;padding:32px 24px;}}
+  </style>
+</head>
+<body>
+<div class="left-panel">
+  <div class="orb orb1"></div><div class="orb orb2"></div>
+  <div class="logo-wrap">
+    <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+    <div class="logo-name">Health<span>AI</span></div>
+  </div>
+  <div class="hero-heading">Monitor your<br/>health with<br/><em>AI precision</em></div>
+  <p class="hero-sub">Real-time vitals tracking, intelligent risk assessment, and an AI health assistant — all in one secure platform.</p>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label"><span class="pulse-dot"></span>Live</div><div class="stat-val">72 <span style="font-size:12px;color:var(--muted)">bpm</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">Heart Rate</div></div>
+    <div class="stat-card"><div class="stat-label">Oxygen</div><div class="stat-val">98 <span style="font-size:12px;color:var(--muted)">%</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">SpO₂</div></div>
+    <div class="stat-card"><div class="stat-label">Status</div><div class="stat-val" style="color:var(--green);font-size:17px">✓ Safe</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Risk Level</div></div>
+  </div>
+  <div class="ecg-line"><svg class="ecg-svg" viewBox="0 0 800 80" fill="none"><polyline points="0,40 60,40 80,40 90,10 100,70 110,40 120,40 160,40 170,5 180,75 190,40 800,40" stroke="#0ABFBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="400,40 460,40 480,40 490,10 500,70 510,40 520,40 560,40 570,5 580,75 590,40 800,40" stroke="#0ABFBC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="right-panel">
+  <div class="form-box">
+    <div class="form-title">Welcome back</div>
+    <p class="form-sub">Sign in to access your health dashboard</p>
+    <div class="tab-row">
+      <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" id="registerTab" onclick="switchTab('register')">Register</button>
+    </div>
+    <div class="role-row">
+      <button type="button" class="role-btn selected" id="rolePatient" onclick="selectRole('patient')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Patient</button>
+      <button type="button" class="role-btn" id="roleDoctor" onclick="selectRole('doctor')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Doctor</button>
+    </div>
+    <form id="loginForm" action="/login" method="POST">
+      <input type="hidden" name="role" id="loginRole" value="patient"/>
+      <div class="input-group"><label class="input-label">Username</label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><input type="text" name="username" placeholder="Enter your username" required/></div></div>
+      <div class="input-group"><label class="input-label">Password</label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" name="password" placeholder="••••••••" required/></div></div>
+      <button type="submit" class="submit-btn">Sign In →</button>
+    </form>
+    <form id="registerForm" action="/register" method="POST" style="display:none">
+      <input type="hidden" name="role" id="registerRole" value="patient"/>
+      <div class="input-group"><label class="input-label">Username</label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><input type="text" name="username" placeholder="Choose a username" required/></div></div>
+      <div class="input-group"><label class="input-label">Password</label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" name="password" placeholder="Create a password" required/></div></div>
+      <button type="submit" class="submit-btn">Create Account →</button>
+    </form>
+    <div class="divider">Secured &amp; Encrypted</div>
+    <div class="features-row">
+      <div class="feature-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Live Vitals</div>
+      <div class="feature-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>AI Analysis</div>
+      <div class="feature-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>AI Chat</div>
+    </div>
+  </div>
+</div>
+<div class="watermark"><div class="wm-dot"></div><div class="wm-text"><b>MADHAVAN</b> AI&amp;DS</div></div>
+<script>
+  let cR='patient',cT='login';
+  function switchTab(t){cT=t;document.getElementById('loginForm').style.display=t==='login'?'block':'none';document.getElementById('registerForm').style.display=t==='register'?'block':'none';document.getElementById('loginTab').classList.toggle('active',t==='login');document.getElementById('registerTab').classList.toggle('active',t==='register');upd();}
+  function selectRole(r){cR=r;document.getElementById('rolePatient').classList.toggle('selected',r==='patient');document.getElementById('roleDoctor').classList.toggle('selected',r==='doctor');upd();}
+  function upd(){document.getElementById('loginRole').value=cR;document.getElementById('registerRole').value=cR;}
+</script>
+</body></html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>HealthAI — History</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--teal:#0ABFBC;--teal-dk:#089599;--navy:#0D1B2A;--card:#111f2e;--border:rgba(10,191,188,0.14);--text:#E8F4F8;--muted:#6B8FA3;--green:#06D6A0;--red:#F87171;--orange:#FB923C;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(10,191,188,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(10,191,188,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+    .page{max-width:960px;margin:0 auto;padding:28px 20px 60px;position:relative;z-index:1;}
+    nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:10px;}
+    .nav-logo{display:flex;align-items:center;gap:10px;}
+    .nav-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--teal),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(10,191,188,0.35);}
+    .nav-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;}
+    .nav-name span{color:var(--teal);}
+    .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:4px;}
+    .page-sub{font-size:14px;color:var(--muted);margin-bottom:24px;}
+    .table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border);}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    thead{background:rgba(10,191,188,0.05);}
+    th{padding:13px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;}
+    td{padding:13px 16px;border-top:1px solid var(--border);vertical-align:middle;}
+    tr:hover td{background:rgba(255,255,255,0.02);}
+    .risk-pill{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;}
+    .low{background:rgba(6,214,160,0.12);color:var(--green);}
+    .mod{background:rgba(251,146,60,0.12);color:var(--orange);}
+    .high{background:rgba(248,113,113,0.12);color:var(--red);}
+    .score-bar{height:4px;border-radius:2px;background:rgba(255,255,255,0.06);width:60px;display:inline-block;vertical-align:middle;margin-left:8px;overflow:hidden;}
+    .score-fill{height:100%;border-radius:2px;background:var(--teal);}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+    .empty-state svg{margin-bottom:16px;opacity:0.3;}
+    .bottom-nav{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;}
+    .btn-nav{padding:10px 18px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-block;}
+    .btn-nav:hover{border-color:var(--teal);color:var(--teal);}
+    .watermark{position:fixed;bottom:14px;right:18px;display:flex;align-items:center;gap:7px;z-index:9999;pointer-events:none;user-select:none;}
+    .wm-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(10,191,188,0.5)}70%{box-shadow:0 0 0 8px rgba(10,191,188,0)}100%{box-shadow:0 0 0 0 rgba(10,191,188,0)}}
+    .wm-text{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.6px;color:rgba(10,191,188,0.5);}
+    .wm-text b{color:rgba(10,191,188,0.85);}
+  </style>
+</head>
+<body>
+<div class="page">
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="nav-name">Health<span>AI</span></div>
+    </div>
+  </nav>
+
+  <div class="page-title">📊 Patient History</div>
+  <p class="page-sub">All past health records and vitals</p>
+
+  {% if data %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Patient</th><th>Doctor</th><th>Heart Rate</th><th>SpO₂</th><th>Temp</th><th>Result</th><th>Score</th></tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+        <tr>
+          <td style="color:var(--muted)">{{ loop.index }}</td>
+          <td style="font-weight:600">{{ row[1] }}</td>
+          <td style="color:var(--muted)">{{ row[4] }}</td>
+          <td>{{ row[7] }} <span style="font-size:11px;color:var(--muted)">bpm</span></td>
+          <td>{{ row[8] }}<span style="font-size:11px;color:var(--muted)">%</span></td>
+          <td>{{ row[9] }}<span style="font-size:11px;color:var(--muted)">°C</span></td>
+          <td><span class="risk-pill {% if row[10]=='High Risk' %}high{% elif row[10]=='Moderate Risk' %}mod{% else %}low{% endif %}">{{ row[10] }}</span></td>
+          <td>{{ row[11] }}<span class="score-bar"><span class="score-fill" style="width:{{ row[11] }}%"></span></span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>
+    <p>No records yet. Submit your first health check to see history.</p>
+  </div>
+  {% endif %}
+
+  <div class="bottom-nav">
+    <a href="/patient" class="btn-nav">← Back</a>
+    <a href="/analytics" class="btn-nav">📈 Analytics</a>
+  </div>
+</div>
+<div class="watermark"><div class="wm-dot"></div><div class="wm-text"><b>MADHAVAN</b> AI&amp;DS</div></div>
+</body></html>

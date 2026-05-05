@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>HealthAI — Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--teal:#0ABFBC;--teal-dk:#089599;--navy:#0D1B2A;--card:#111f2e;--border:rgba(10,191,188,0.14);--text:#E8F4F8;--muted:#6B8FA3;--green:#06D6A0;--red:#F87171;--orange:#FB923C;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(10,191,188,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(10,191,188,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+    .page{max-width:960px;margin:0 auto;padding:28px 20px 60px;position:relative;z-index:1;}
+    nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:10px;}
+    .nav-logo{display:flex;align-items:center;gap:10px;}
+    .nav-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--teal),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(10,191,188,0.35);}
+    .nav-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;}
+    .nav-name span{color:var(--teal);}
+    .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.5px;margin-bottom:4px;}
+    .page-sub{font-size:14px;color:var(--muted);margin-bottom:24px;}
+    /* SUMMARY CARDS */
+    .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+    .s-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;}
+    .s-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:4px;}
+    .s-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;}
+    /* CHARTS */
+    .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+    .chart-card h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    canvas{max-height:190px;}
+    /* NAV */
+    .bottom-nav{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;}
+    .btn-nav{padding:10px 18px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.2s;display:inline-block;}
+    .btn-nav:hover{border-color:var(--teal);color:var(--teal);}
+    .watermark{position:fixed;bottom:14px;right:18px;display:flex;align-items:center;gap:7px;z-index:9999;pointer-events:none;user-select:none;}
+    .wm-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(10,191,188,0.5)}70%{box-shadow:0 0 0 8px rgba(10,191,188,0)}100%{box-shadow:0 0 0 0 rgba(10,191,188,0)}}
+    .wm-text{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.6px;color:rgba(10,191,188,0.5);}
+    .wm-text b{color:rgba(10,191,188,0.85);}
+    @media(max-width:600px){.summary-grid{grid-template-columns:1fr 1fr;}.charts-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="nav-name">Health<span>AI</span></div>
+    </div>
+  </nav>
+
+  <div class="page-title">📈 Health Analytics</div>
+  <p class="page-sub">Visual trends and statistics from all recorded vitals</p>
+
+  <!-- SUMMARY -->
+  <div class="summary-grid">
+    <div class="s-card">
+      <div class="s-val" style="color:var(--red)">{{ (hr|sum/hr|length)|round(0)|int if hr else '—' }}</div>
+      <div class="s-label">Avg Heart Rate</div>
+    </div>
+    <div class="s-card">
+      <div class="s-val" style="color:var(--teal)">{{ (spo2|sum/spo2|length)|round(1) if spo2 else '—' }}%</div>
+      <div class="s-label">Avg SpO₂</div>
+    </div>
+    <div class="s-card">
+      <div class="s-val" style="color:var(--orange)">{{ (temp|sum/temp|length)|round(1) if temp else '—' }}°C</div>
+      <div class="s-label">Avg Temperature</div>
+    </div>
+    <div class="s-card">
+      <div class="s-val" style="color:var(--green)">{{ (score|sum/score|length)|round(0)|int if score else '—' }}</div>
+      <div class="s-label">Avg Health Score</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-grid">
+    <div class="chart-card"><h3>❤️ Heart Rate Trend</h3><canvas id="hrChart"></canvas></div>
+    <div class="chart-card"><h3>💧 SpO₂ Trend</h3><canvas id="spo2Chart"></canvas></div>
+    <div class="chart-card"><h3>🌡️ Temperature Trend</h3><canvas id="tempChart"></canvas></div>
+    <div class="chart-card"><h3>⭐ Health Score Trend</h3><canvas id="scoreChart"></canvas></div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="/history" class="btn-nav">📊 History</a>
+    <a href="/patient" class="btn-nav">← Back</a>
+  </div>
+</div>
+
+<div class="watermark"><div class="wm-dot"></div><div class="wm-text"><b>MADHAVAN</b> AI&amp;DS</div></div>
+
+<script>
+const hr={{hr|tojson}},spo2={{spo2|tojson}},temp={{temp|tojson}},score={{score|tojson}};
+const labels=hr.map((_,i)=>'Record '+(i+1));
+const gridColor='rgba(255,255,255,0.04)';
+const tickColor='#6B8FA3';
+const base={type:'line',options:{responsive:true,animation:{duration:600},plugins:{legend:{display:false}},scales:{x:{ticks:{color:tickColor,font:{size:10},maxTicksLimit:6},grid:{color:gridColor}},y:{ticks:{color:tickColor,font:{size:10}},grid:{color:gridColor}}}}};
+function mkChart(id,data,color,label){
+  new Chart(document.getElementById(id),{...base,data:{labels,datasets:[{label,data,borderColor:color,backgroundColor:color+'18',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:color,borderWidth:2}]}});
+}
+mkChart('hrChart',hr,'#F87171','Heart Rate (bpm)');
+mkChart('spo2Chart',spo2,'#0ABFBC','SpO2 (%)');
+mkChart('tempChart',temp,'#FB923C','Temperature (°C)');
+mkChart('scoreChart',score,'#06D6A0','Health Score');
+</script>
+</body></html>
